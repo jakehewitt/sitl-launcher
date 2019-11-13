@@ -1,0 +1,21 @@
+## Project Related
+node_modules/
+data/
+coverage/
+tmp/
+build/
+.env
+*package-lock.json
+
+## IDE Related
+.idea
+._*
+*~
+
+## Logs & Dumps
+*.log
+dump*
+
+# System
+.DS_Store
+
