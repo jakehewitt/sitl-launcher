@@ -6,6 +6,7 @@ import * as serviceWorker from "./utils/serviceWorker";
 import { Auth0Provider } from "./utils/react-auth0-spa";
 import config from "./auth_config.json";
 import history from "./utils/history";
+import ThemeWrapper from "./utils/theme";
 
 // A function that routes the user to the right place
 // after login
@@ -25,7 +26,9 @@ ReactDOM.render(
     audience={config.audience}
     onRedirectCallback={onRedirectCallback}
   >
-    <App />
+    <ThemeWrapper>
+      <App />
+    </ThemeWrapper>
   </Auth0Provider>,
   document.getElementById("root")
 );
