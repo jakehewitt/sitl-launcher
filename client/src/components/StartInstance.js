@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import { makeStyles } from '@material-ui/core/styles';
 import {Typography, Select, FormControl, MenuItem, TextField, Checkbox, Button, Paper} from '@material-ui/core';
+import {useAuth0} from "../utils/react-auth0-spa";
+import {useMessage} from "../utils/message";
+import {useLocationList, useApi} from "../utils/hooks";
+import Loading from "./Loading";
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -45,10 +49,47 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const StartInstance = () => {
+const StartInstance = (props) => {
   const classes = useStyles();
-  const [location, setLocation] = useState('');
-  const [checked, setChecked] = useState(false);
+  const { getTokenSilently } = useAuth0();
+  const message = useMessage()
+  const {locationList} = useLocationList()
+  const {fetchData} = useApi()
+  const {setInstanceList} = props.instances
+
+
+  const [state, setState] = useState({
+    label: '',
+    location: '',
+    customLocation: { lat: '', lon: ''},
+    fos: false,
+    speed: 1
+  })
+
+  const handleSubmit = async (form) => {
+    try {
+      message.info("Starting Instance")
+      const token = await getTokenSilently();
+      const response = await fetch('/api/sitl', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(form),
+      })
+      const {error, data} = await response.json();
+      if (error) message.error(error)
+      else message.success(data)
+      const refresh = await fetchData("/api/sitl")
+      setInstanceList(refresh)
+    } catch (error) {
+      console.error(error)
+      message.error('Server error')
+    }
+  }
+
+  if (!locationList) return <Loading variant='component'/>
 
   return (
     <Paper className={classes.root}>
@@ -59,6 +100,7 @@ const StartInstance = () => {
           id="label"
           label=""
           margin="normal"
+          onChange={(event) => setState({...state, label: event.target.value})}
         />
       </div>
       <div className={classes.row}>
@@ -67,15 +109,15 @@ const StartInstance = () => {
           <Select
             labelId="location-label"
             id="location"
-            value={location}
-            onChange={(event) => setLocation(event.target.value)}
+            value={state.location}
+            onChange={(event) => setState({...state, location: event.target.value})}
             displayEmpty
             className={classes.selectEmpty}
           >
             <MenuItem value=""><em>None</em></MenuItem>
-            <MenuItem value={10}>Ten</MenuItem>
-            <MenuItem value={20}>Twenty</MenuItem>
-            <MenuItem value={30}>Thirty</MenuItem>
+            {Object.keys(locationList).map(location => (
+              <MenuItem key={location} value={location}>{location}</MenuItem>
+            ))}
           </Select>
         </FormControl>
         <Typography className={classes.or}>or</Typography>
@@ -84,13 +126,28 @@ const StartInstance = () => {
           id="latitude"
           label="Latitude"
           margin="normal"
+          value={state.customLocation.lat}
+          onChange={(event) => setState({
+            ...state,
+            customLocation: {
+              ...state.customLocation,
+              lat: event.target.value
+            }
+          })}
         />
         <TextField
           className={classes.textField}
           id="longitude"
           label="Longitude"
           margin="normal"
-        />
+          value={state.customLocation.lon}
+          onChange={(event) => setState({
+            ...state,
+            customLocation: {
+              ...state.customLocation,
+              lon: event.target.value
+            }
+          })}        />
       </div>
       <div className={classes.row}>
         <Typography className={classes.label}>Speed up</Typography>
@@ -98,22 +155,23 @@ const StartInstance = () => {
           className={classes.numField}
           id="speed"
           margin="normal"
-          defaultValue="1"
           type="number"
           inputProps={{ min: "1", max: "10", step: "1" }}
+          value={state.speed}
+          onChange={(event) => setState({...state, speed: event.target.value})}
         />
       </div>
       <div className={classes.row}>
         <Typography className={classes.label}>Use FOS</Typography>
         <Checkbox
-          checked={checked}
-          onChange={(event) => setChecked(event.target.checked)}
+          checked={state.fos}
+          onChange={(event) => setState({...state, fos: event.target.checked})}
           value="checked"
         />
         <Typography className={classes.label}>(warning: this will replace & restart the current FOS instance)</Typography>
       </div>
       <div className={classes.row}>
-        <Button variant="contained" color="primary" className={classes.button}>
+        <Button variant="contained" color="primary" className={classes.button} onClick={() => handleSubmit(state)}>
           Start
         </Button>
       </div>

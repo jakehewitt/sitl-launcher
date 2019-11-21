@@ -9,7 +9,7 @@ import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import { useAuth0 } from "../utils/react-auth0-spa";
 import { useMessage } from "../utils/message";
-import useInstanceList from "../hooks/useInstanceList";
+import { useApi } from "../utils/hooks";
 import Loading from "./Loading";
 
 const BASE = 5760
@@ -31,26 +31,12 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-export default function SimpleTable(){
+export default function SimpleTable(props){
   const classes = useStyles();
   const { getTokenSilently } = useAuth0();
   const message = useMessage()
-  const {instanceList, setInstanceList} = useInstanceList()
-
-  const refreshData = async (index) => {
-    try {
-      const token = await getTokenSilently();
-      const response = await fetch("/api/sitl", { headers: { Authorization: `Bearer ${token}` }});
-
-      const {error, data} = await response.json();
-      if (error) message.error(error)
-
-      setInstanceList(data)
-    } catch (error) {
-      console.error(error)
-      message.error('Server error')
-    }
-  }
+  const {instanceList, setInstanceList} = props.instances
+  const {fetchData} = useApi()
 
   const handleRestart = async (index) => {
     try {
@@ -88,14 +74,15 @@ export default function SimpleTable(){
       const {error, data} = await response.json();
       if (error) message.error(error)
       else message.success(data)
-      await refreshData()
+      const refresh = await fetchData("/api/sitl")
+      setInstanceList(refresh)
     } catch (error) {
       console.error(error)
       message.error('Server error')
     }
   }
 
-  if (instanceList === null) return <Loading variant='component'/>
+  if (!instanceList) return <Loading variant='component'/>
 
   const instances = []
   for (const [, value] of Object.entries(instanceList)) {

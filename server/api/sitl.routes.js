@@ -8,4 +8,6 @@ module.exports = function (app) {
   app.post("/api/sitl", expressWrapper(controller.startInstance));
   app.delete("/api/sitl", expressWrapper(controller.stopInstance));
   app.put("/api/sitl", expressWrapper(controller.restartInstance));
+
+  app.get("/api/locations", expressWrapper(controller.loadLocations));
 };

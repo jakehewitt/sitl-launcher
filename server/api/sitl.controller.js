@@ -1,3 +1,6 @@
+const fs = require('fs');
+const { createInterface } = require('readline');
+const { once } = require('events');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 const { format } = require('date-fns')
@@ -18,15 +21,15 @@ exports.getInstances = async (req) => {
 
 exports.startInstance = async (req) => {
   const state = req.store.getState()
+
   const { label, speed, location, customLocation, fos } = req.body
   const index = fos ? 0 : getAvailableIndex(state.instances)
-
   const instance = {
     index,
-    label: label || `sitl${index}`,
+    label: (label && label !== '') ? label : `sitl${index}`,
     location: (customLocation && isValidCoordinate(customLocation))
       ? `${customLocation.lat},${customLocation.lon}`
-      : location || 'Airfield',
+      : (location && location !== '') ? location : 'Airfield',
     speed: (Number.isInteger(speed) && speed >= 1 && speed <= 10) ? speed : 1,
     created: format(new Date(), 'd MMM YY HH:mm')
   }
@@ -71,7 +74,7 @@ exports.stopInstance = async (req) => {
   const instance = state.instances[index]
   if (!instance) throw Error('Instance not found')
 
-  let sitlStopString=`pm2 delete ${instance.label}`
+  let sitlStopString=`pm2 delete sitl${instance.index}`
   const { stdout, stderr } = await exec(sitlStopString);
 
   if (stderr){
@@ -91,7 +94,7 @@ exports.restartInstance = async (req) => {
   const instance = state.instances[index]
   if (!instance) throw Error('Instance not found')
 
-  let sitlStopString=`pm2 restart ${instance.label}`
+  let sitlStopString=`pm2 restart sitl${instance.index}`
   const { stdout, stderr } = await exec(sitlStopString);
 
   if (stderr){
@@ -99,4 +102,29 @@ exports.restartInstance = async (req) => {
   } else {
     return `SITL instance ${instance.label} restarted`
   }
+}
+
+exports.loadLocations = async (req) => {
+  const FILENAME = 'locations.txt'
+  const locations = {}
+
+  // Check if file exists
+  try {
+    await fs.promises.access(FILENAME);
+  } catch (error) {
+    throw error
+  }
+
+  // Read file line-by-line
+  const fileStream = fs.createReadStream(FILENAME)
+  const rl = createInterface({ input: fileStream });
+
+  rl.on('line', (line) => {
+    if (line.includes('#')) return;
+    const [index, lat, lon, alt, heading] = line.split(/[=,]+/)
+    locations[index] = {lat, lon, alt, heading}
+  });
+  await once(rl, 'close');
+
+  return locations
 }
