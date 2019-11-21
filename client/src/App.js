@@ -6,7 +6,6 @@ import NavBar from "./components/NavBar";
 import PrivateRoute from "./components/PrivateRoute";
 import Content from "./views/Content";
 
-
 function App() {
   const { loading } = useAuth0();
 

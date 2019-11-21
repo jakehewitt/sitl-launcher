@@ -7,6 +7,8 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
+import { useAuth0 } from "../utils/react-auth0-spa";
+import { useMessage } from "../utils/message";
 import useInstanceList from "../hooks/useInstanceList";
 import Loading from "./Loading";
 
@@ -31,8 +33,67 @@ const useStyles = makeStyles(theme => ({
 
 export default function SimpleTable(){
   const classes = useStyles();
-  const instanceList = useInstanceList()
-  console.log(instanceList)
+  const { getTokenSilently } = useAuth0();
+  const message = useMessage()
+  const {instanceList, setInstanceList} = useInstanceList()
+
+  const refreshData = async (index) => {
+    try {
+      const token = await getTokenSilently();
+      const response = await fetch("/api/sitl", { headers: { Authorization: `Bearer ${token}` }});
+
+      const {error, data} = await response.json();
+      if (error) message.error(error)
+
+      setInstanceList(data)
+    } catch (error) {
+      console.error(error)
+      message.error('Server error')
+    }
+  }
+
+  const handleRestart = async (index) => {
+    try {
+      message.info("Restarting Instance")
+      const token = await getTokenSilently();
+      const response = await fetch('/api/sitl', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ index }),
+      })
+      const {error, data} = await response.json();
+      if (error) message.error(error)
+      else message.success(data)
+    } catch (error) {
+      console.error(error)
+      message.error('Server error')
+    }
+  }
+
+  const handleDelete = async (index) => {
+    try {
+      message.info("Deleting Instance")
+      const token = await getTokenSilently();
+      const response = await fetch('/api/sitl', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ index }),
+      })
+      const {error, data} = await response.json();
+      if (error) message.error(error)
+      else message.success(data)
+      await refreshData()
+    } catch (error) {
+      console.error(error)
+      message.error('Server error')
+    }
+  }
 
   if (instanceList === null) return <Loading variant='component'/>
 
@@ -40,8 +101,6 @@ export default function SimpleTable(){
   for (const [, value] of Object.entries(instanceList)) {
     instances.push(value)
   }
-
-  console.log(instances)
 
   return (
     <Paper className={classes.root}>
@@ -67,8 +126,8 @@ export default function SimpleTable(){
               <TableCell>{portsToString(calculatePorts(instance.index))}</TableCell>
               <TableCell>{instance.created}</TableCell>
               <TableCell>
-                <Button variant="contained" color="primary" className={classes.button}>Restart</Button>
-                <Button variant="contained" color="secondary" className={classes.button}>Delete</Button>
+                <Button variant="contained" color="primary" className={classes.button} onClick={() => handleRestart(instance.index)}>Restart</Button>
+                <Button variant="contained" color="secondary" className={classes.button} onClick={() => handleDelete(instance.index)}>Delete</Button>
               </TableCell>
             </TableRow>
           ))}

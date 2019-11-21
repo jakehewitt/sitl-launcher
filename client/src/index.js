@@ -4,6 +4,7 @@ import "./index.css";
 import App from "./App";
 import * as serviceWorker from "./utils/serviceWorker";
 import { Auth0Provider } from "./utils/react-auth0-spa";
+import { MessageProvider } from './utils/message'
 import config from "./auth_config.json";
 import history from "./utils/history";
 import ThemeWrapper from "./utils/theme";
@@ -27,7 +28,9 @@ ReactDOM.render(
     onRedirectCallback={onRedirectCallback}
   >
     <ThemeWrapper>
-      <App />
+      <MessageProvider>
+        <App />
+      </MessageProvider>
     </ThemeWrapper>
   </Auth0Provider>,
   document.getElementById("root")

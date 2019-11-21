@@ -5,7 +5,7 @@ exports.expressWrapper = (fn) => {
   return async function(req, res, next) {
     try {
       let result = await fn(req)
-      return res.status(200).send(result);
+      return res.status(200).send({data: result});
     } catch (error) {
       // 1. Transform any specific error messages
       if (error.toString().includes('ValidationError'))
