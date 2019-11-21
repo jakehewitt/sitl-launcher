@@ -31,7 +31,7 @@ exports.startInstance = async (req) => {
       ? `${customLocation.lat},${customLocation.lon}`
       : (location && location !== '') ? location : 'Airfield',
     speed: (Number.isInteger(speed) && speed >= 1 && speed <= 10) ? speed : 1,
-    created: format(new Date(), 'd MMM YY HH:mm')
+    created: format(new Date(), 'd MMM yy HH:mm')
   }
 
   const locationString = (customLocation && isValidCoordinate(customLocation))
