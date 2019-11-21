@@ -36,4 +36,9 @@ ReactDOM.render(
   document.getElementById("root")
 );
 
-serviceWorker.unregister();
+if (process.env.NODE_ENV === "production"){
+  serviceWorker.register();
+} else {
+  console.log("Running dev")
+  serviceWorker.unregister();
+}

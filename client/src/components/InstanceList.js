@@ -42,7 +42,7 @@ export default function SimpleTable(props){
     try {
       message.info("Restarting Instance")
       const token = await getTokenSilently();
-      const response = await fetch('/api/sitl', {
+      const response = await fetch(`/api/sitl`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -74,7 +74,7 @@ export default function SimpleTable(props){
       const {error, data} = await response.json();
       if (error) message.error(error)
       else message.success(data)
-      const refresh = await fetchData("/api/sitl")
+      const refresh = await fetchData('/api/sitl')
       setInstanceList(refresh)
     } catch (error) {
       console.error(error)

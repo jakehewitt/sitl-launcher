@@ -1,7 +1,7 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "main": "server.js",
+  "main": "index.js",
   "license": "closed",
   "private": true,
   "dependencies": {
@@ -22,6 +22,5 @@
   },
   "scripts": {
     "watch": "nodemon start"
-  },
-  "proxy": "http://localhost:3001"
+  }
 }

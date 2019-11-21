@@ -2,5 +2,6 @@
 
 module.exports = {
   api_host: process.env.API_HOST || "localhost",
-  api_port: process.env.API_PORT || "3001",
+  http_port: process.env.HTTP_PORT || "8080",
+  https_port: process.env.HTTPS_PORT || "8443",
 };

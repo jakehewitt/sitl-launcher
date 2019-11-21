@@ -81,7 +81,7 @@ const StartInstance = (props) => {
       const {error, data} = await response.json();
       if (error) message.error(error)
       else message.success(data)
-      const refresh = await fetchData("/api/sitl")
+      const refresh = await fetchData('/api/sitl')
       setInstanceList(refresh)
     } catch (error) {
       console.error(error)

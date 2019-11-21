@@ -46,14 +46,14 @@ wss.on('connection', async (ws, req) => {
 })
 
 // Starting http server
-httpServer.listen(config.api_port, () => {
-  console.log(`HTTP Server running on port ${config.api_port}`);
+httpServer.listen(config.http_port, () => {
+  console.log(`HTTP Server running on port ${config.http_port}`);
 });
 
 // Starting https server
 try {
   if (httpsServer){
-    httpsServer.listen(443, () => { console.log('HTTPS Server running on port 443') });
+    httpsServer.listen(config.https_port, () => { console.log(`HTTPS Server running on port ${config.https_port}`) });
   }
 } catch (e) {
   console.error("Unable to start https server", e)

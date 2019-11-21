@@ -9,7 +9,8 @@ export function useApi() {
   const fetchData = async (url) => {
     try {
       const token = await getTokenSilently();
-      const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` }});
+      const endpoint = url.charAt(0) === '/' ? url : `/${url}`
+      const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${token}` }});
       const {error, data} = await response.json();
       if (error) message.error(error)
       return data
@@ -30,7 +31,7 @@ export function useInstanceList() {
 
   useEffect(() => {
     const doThing = async () => {
-      const data = await fetchData("/api/sitl")
+      const data = await fetchData('/api/sitl')
       setInstanceList(data)
     }
     doThing()
@@ -46,7 +47,7 @@ export function useLocationList() {
 
   useEffect(() => {
     const doThing = async () => {
-      const data = await fetchData("/api/locations")
+      const data = await fetchData('/api/locations')
       setLocationList(data)
     }
     doThing()
