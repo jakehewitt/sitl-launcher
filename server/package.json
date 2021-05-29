@@ -15,7 +15,7 @@
     "lodash": "^4.17.15",
     "morgan": "^1.9.1",
     "winston": "^3.2.1",
-    "ws": "^7.2.0"
+    "ws": "^7.4.6"
   },
   "scripts": {
     "watch": "nodemon start"
